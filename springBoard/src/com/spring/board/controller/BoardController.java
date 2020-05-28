@@ -79,7 +79,7 @@ public class BoardController {
 	@Autowired
 	JavaMailSender mailSender;
 	
-	//bean�� id媛� uploadPath�� ��洹몄갭議�
+	//bean의 id가 uploadPath인 태그참조
 	@Resource(name = "uploadPath")
 	String uploadPath;
 	
@@ -100,9 +100,9 @@ public class BoardController {
 	}
 	
 	/**
-	 * 寃����� 由ъ�ㅽ��
-	 * PageNo瑜� 珥�湲곗�� 1濡� �ㅼ��
-	 * Model濡� 酉고���댁����� �ъ�⑷��ν�� 媛� boardList瑜� �ㅼ��
+	 * 게시판 리스트
+	 * PageNo를 초기에 1로 설정
+	 * Model로 뷰페이지에서 사용가능한 값 boardList를 설정
 	 */
 	@RequestMapping(value = "/board/boardList.do", method = RequestMethod.GET)
 	public String boardList( Locale locale 
@@ -132,8 +132,8 @@ public class BoardController {
 		return "board/boardList";
 	}
 	/**
-	 * 寃����� 湲� ���몃낫湲�
-	 * GET諛⑹���쇰� Type怨� Num�� 諛����� 二쇱��媛��� ��寃⑥�
+	 * 게시판 글 상세보기
+	 * GET방식으로 Type과 Num을 받아와 주소값에 넘겨줌
 	 */
 	@RequestMapping(value = "/board/{boardType}/{boardNum}/boardView.do", method = RequestMethod.GET)
 	public String boardView( Locale locale
@@ -143,7 +143,7 @@ public class BoardController {
 							, BoardVo boardVo
 							) throws Exception {
 		
-		//議고���� 利�媛� +1
+		//조회수 증가 +1
 		boardService.updateReadHits(boardType,boardNum);
 		
 		boardVo = boardService.selectBoard(boardType,boardNum);
@@ -160,7 +160,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * 寃���湲� ����
+	 * 게시글 작성
 	 */
 	@RequestMapping(value = "/board/boardWrite.do", method = RequestMethod.GET)
 	public String boardWrite(Locale locale,ComCodeVo comCodeVo,PageVo pageVo, Model model, HttpServletRequest request) throws Exception{
@@ -178,22 +178,21 @@ public class BoardController {
 	}
 	
 	/**
-	//�⑥�쇳�� Insert
+	//단일행 Insert
 	@RequestMapping(value = "/board/boardWriteAction.do", method = RequestMethod.POST)
 	@ResponseBody
 	public String boardWriteAction(Locale locale
 			,MultipartFile file
 			,BoardVo boardVo,Model model) throws Exception{
 		
-
 		Map<String, Object> result = new HashMap<String, Object>();
 		CommonUtil commonUtil = new CommonUtil();
 		
-		String orgFileName = file.getOriginalFilename();//��蹂몄�대�
-		String orgFileExtension = orgFileName.substring(orgFileName.lastIndexOf("."));//�대��� 留�吏�留�����.�닿구湲곗��쇰� ���쇱�� 媛��몄��
-		String saveFileName = UUID.randomUUID().toString().replace("-", "") + orgFileExtension;//���ㅼ�쇰� �대�蹂�寃� �� ��踰�������
-		Long saveFileSize = file.getSize();//���쇳�ш린
-		File target = new File(uploadPath, saveFileName);//��寃� ���κ꼍濡��� 蹂몃���대��쇰� 
+		String orgFileName = file.getOriginalFilename();//원본이름
+		String orgFileExtension = orgFileName.substring(orgFileName.lastIndexOf("."));//이름의 마지막에서.이걸기준으로 잘라서 가져옴
+		String saveFileName = UUID.randomUUID().toString().replace("-", "") + orgFileExtension;//랜덤으로 이름변경 후 서버에저장
+		Long saveFileSize = file.getSize();//파일크기
+		File target = new File(uploadPath, saveFileName);//타겟 저장경로에 본래이름으로 
 		
 		boardVo.setFileRoot(saveFileName);
 		
@@ -201,11 +200,8 @@ public class BoardController {
 		
 		//List<BoardVo> list = new ArrayList<BoardVo>();
 		int resultCnt = boardService.boardInsert(boardVo);
-
 		result.put("success", (resultCnt > 0)?"Y":"N");
-
 		String callbackMsg = commonUtil.getJsonCallBackString(" ",result);
-
 		return callbackMsg;
 		
 	}
@@ -261,6 +257,9 @@ public class BoardController {
 			}
 			System.out.println(h+"번째 바깥 for 문 종료");
 		}
+		
+		
+		logger.info("넘어오는 글 갯수는 = "+type.length);
 		for(int i=0;i<type.length;i++) {//2개 넘어오고
 			BoardVo vo = new BoardVo();
 			vo.setBoardType(type[i]);
@@ -268,59 +267,11 @@ public class BoardController {
 			vo.setBoardComment(comment[i]);
 			vo.setCreator(writer[i]);
 			list2.add(vo);
+			
 		}
-		resultCnt = boardService.boardInsertAll(list2);
-		
-		logger.info("넘어오는 글 갯수는 = "+type.length);
-//		if(c > 0) {//파일이 존재할때
-//			for(int i=0;i<type.length;i++) {//2개 넘어오고
-//				BoardVo vo = new BoardVo();
-//				vo.setBoardType(type[i]);
-//				vo.setBoardTitle(title[i]);
-//				vo.setBoardComment(comment[i]);
-//				vo.setCreator(writer[i]);
-//				list2.add(vo);
-//				for(int j=0;j<file.length;j++) {
-//					PostFileVo fileVo = new PostFileVo();
-//					String orgFileName = file[j].getOriginalFilename();//원본이름
-//					//String orgFileExtension = orgFileName.substring(orgFileName.lastIndexOf("."));//이름의 마지막에서.이걸기준으로 잘라서 가져옴
-//					String saveFileName = UUID.randomUUID().toString().replace("-", "");//+orgFileExtension;//랜덤으로 이름변경 후 서버에저장
-//					Long saveFileSize = file[j].getSize();//파일크기
-//					File target = new File(uploadPath, saveFileName);//저장경로에 저장
-//					String fileType = file[j].getContentType();
-//					file[j].transferTo(target);//파일업로드
-//					String fileWriter = mtfRequest.getParameter("creator");
-//					String fileGroup = mtfRequest.getParameter("boardType");
-//					//파일인서트
-//					fileVo.setFileWriter(fileWriter);
-//					fileVo.setFileOrgName(orgFileName);
-//					fileVo.setFileSaveName(saveFileName);
-//					fileVo.setFileType(fileType);
-//					fileVo.setFileSize(saveFileSize);
-//					fileVo.setFilePath(target.getPath());
-//					fileVo.setFileGroup(fileGroup);
-//					
-//					fileList.add(fileVo);	
-//				}
-//				boardService.postFileInsertAll(fileList);
-//			}
-//			resultCnt = boardService.boardInsertAll(list2);
-//
-//		} else {
-//			for(int i=0;i<type.length;i++) {//2개 넘어오고
-//				BoardVo vo = new BoardVo();
-//				vo.setBoardType(type[i]);
-//				vo.setBoardTitle(title[i]);
-//				vo.setBoardComment(comment[i]);
-//				vo.setCreator(writer[i]);
-//				list2.add(vo);
-//			}
-//			resultCnt = boardService.boardInsertAll(list2);
-//		}
-
-		
+		resultCnt = boardService.boardInsertAll(list2);	
+		logger.info("넘어오는 파일 갯수는 = "+file.length);
 		if(c > 0) {
-			System.out.println("==================파일 인서트 시작==================");
 			for(int j=0;j<file.length;j++) {
 				
 				PostFileVo fileVo = new PostFileVo();
@@ -356,15 +307,8 @@ public class BoardController {
 				
 				
 			}
-			boardService.postFileInsertAll(fileList);	
-			System.out.println("======================파일 인서트 종료======================");
+			boardService.postFileInsertAll(fileList);
 		}
-		
-		
-		logger.info("넘어오는 파일 갯수는 = "+file.length);
-		logger.info("c 갯수 = "+c);
-		
-			
 		
 		//해쉬맵을 하나생성
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -388,7 +332,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * ���깃� ���곗�댄�명���댁�
+	 * 작성글 업데이트페이지
 	 */
 	@RequestMapping("/board/{boardType}/{boardNum}/boardUpdate.do")
 	public String boardUpdate(Model model
@@ -404,7 +348,7 @@ public class BoardController {
 	}
 
 	/**
-	 * ���깃� ���곗�댄�� �ㅽ�� 而⑦�몃·��
+	 * 작성글 업데이트 실행 컨트롤러
 	 */
 	@RequestMapping(value = "/board/boardUpdateAction.do", method = RequestMethod.POST)
 	@ResponseBody
@@ -423,7 +367,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * 寃���湲� ����
+	 * 게시글 삭제
 	 */
 	@RequestMapping(value = "/booard/boardDeleteAction.do", method = RequestMethod.POST)
 	@ResponseBody
@@ -435,13 +379,13 @@ public class BoardController {
 		if(resultCnt > 0) {
 			return "success";
 		} else {
-			throw new RuntimeException("�ㅽ��.");
+			throw new RuntimeException("실패.");
 		}
 	
 	}
 	
 	/**
-	 * 泥댄�щ��� ����蹂� 寃���湲� 寃���湲곕��
+	 * 체크박스 타입별 게시글 검색기능
 	 */
 	@RequestMapping(value = "/board/boardSearch.do", method = RequestMethod.POST)
 	@ResponseBody
@@ -479,16 +423,15 @@ public class BoardController {
 		
 	}
 	/**
-	 * 泥댄�щ��� 寃��� 湲곕��
-	 * HTML諛⑹���� 寃���湲곕��
-	 * handlebars媛� ���� HTML jsp���쇰� 援�泥댄������
+	 * 체크박스 검색 기능
+	 * HTML방식의 검색기능
+	 * handlebars가 아닌 HTML jsp파일로 교체하는식
 	 */
 	/**
 	@RequestMapping(value = "/board/boardSearch.do", method = RequestMethod.POST)
 	public String searchBoardList(String boardType, PageVo pageVo,BoardVo boardVo, Model model) throws Exception{
 		
 		int page = 1;
-
 		if(pageVo.getPageNo() == 0){
 			pageVo.setPageNo(page);;
 		}
@@ -505,7 +448,6 @@ public class BoardController {
 		
 		keyList.put("keyList", List);
 		keyList.put("pageNo", page);
-
 		List<BoardVo> boardList = boardService.searchBoardList(keyList);
 		model.addAttribute("boardList", boardList);
 		
@@ -516,7 +458,7 @@ public class BoardController {
 	
 	
 	/**
-	 * ����媛���
+	 * 회원가입
 	 */
 	@RequestMapping("/board/memberWrite.do")
 	public String memberWrite(UserInfoVo userinfoVo, ComCodeVo comCodeVo,Model model) throws Exception {
@@ -534,7 +476,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * 濡�洹몄�명���댁�
+	 * 로그인페이지
 	 */
 	@RequestMapping("/board/memberLogin.do")
 	public String memberLogin() {
@@ -544,36 +486,36 @@ public class BoardController {
 	}
 	
 	/**
-	//濡�洹몄��
+	//로그인
 	@RequestMapping(value = "/board/idchecked.do", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<String, Object> login(HttpServletRequest request
 			, HttpServletResponse response, HttpSession session,com.spring.common.CommandMap commandMap
 			,UserInfoVo userinfo) throws Exception {
 		
-		//�ъ�⑹�� ��蹂� 議고��
+		//사용자 정보 조회
 		Map<String, Object> loginInfo = boardService.userinfoSelect(commandMap.getMap());
-		//��泥��� ���듯��湲� ���� 留� 媛�泥� ����
+		//요청에 응답하기 위한 맵 객체 생성
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		
-		//濡�洹몄�� ��蹂닿� ���ㅻ㈃ 濡�洹몄�몄����
+		//로그인 정보가 있다면 로그인시킴
 		if(loginInfo == null) {
 			resultMap.put("status", 1);
-			resultMap.put("msg", "���ν���� ��蹂닿� ���듬����.");
+			resultMap.put("msg", "입력하신 정보가 없습니다.");
 			
 		} else {
-			//濡�洹몄�� �몄�� ����
+			//로그인 세션 생성
 			request.getSession().setAttribute("loginInfo", userinfo);
 			request.getSession().setMaxInactiveInterval(60 * 30);
-			//荑��� ���� ���� ��臾�
+			//쿠키 생성 판단 유무
 			if(commandMap.get("userCookie").equals("Y")) {
-				//荑��ㅼ���깊�댁�� ���대������
+				//쿠키생성해서 아이디저장
 				Cookie cookie = new Cookie("loginCookie", request.getSession().getId());
-				//荑��� 寃쎈� 而⑦���ㅽ�� 寃쎈�濡� 蹂�寃�
+				//쿠키 경로 컨텍스트 경로로 변경
 				cookie.setPath("/");
-				//荑��� ���④린媛� 7��
+				//쿠키 유효기간 7일
 				cookie.setMaxAge(60*60*24*7);
-				//荑��ㅻ�� response媛�泥댁�� �ｌ��
+				//쿠키를 response객체에 넣음
 				response.addCookie(cookie);
 				
 				Map<String, Object> map = new HashMap<String, Object>();
@@ -584,17 +526,17 @@ public class BoardController {
 				boardService.KeepLogin(map);
 			}	
 			resultMap.put("status", 0);
-			resultMap.put("msg", "�������쇰� 濡�洹몄�몃�����듬����.");
+			resultMap.put("msg", "정상적으로 로그인되었습니다.");
 		}
 		return resultMap;
 	}
 	**/
 	
 	/**
-	 * 濡�洹몄�명���댁�
-	 * �몄��怨� ���대������ 泥댄�щ��� 媛��� request.getParameter濡� ���щ��� ����
-	 * 濡�洹몄�몄�깃났��硫� �몄�� userinfo�� �������대��媛��� �댁�� 濡�洹몄�몄��吏��� 泥댄�щ��ㅻ���댁������
-	 * 荑��ㅻ�� 留����� ��吏��� 寃쎈�瑜� 吏�����怨� DB���� 荑��ㅻ�쇱���ν��������濡� �ㅼ���댁���
+	 * 로그인페이지
+	 * 세션과 아이디저장 체크박스 값을 request.getParameter로 전달받아 저장
+	 * 로그인성공하면 세션 userinfo에 유저아이디값을 담아 로그인유지에 체크박스되어있을때
+	 * 쿠키를 만든뒤 날짜와 경로를 지정하고 DB에도 쿠키를저장할수있도록 설정해준다
 	 */
 	@RequestMapping(value = "/board/idchecked.do", method = RequestMethod.POST)
 	@ResponseBody
@@ -602,8 +544,8 @@ public class BoardController {
 			,HttpServletResponse response,CommandMap commandMap ,HttpSession session,UserInfoVo userinfo) throws Exception, ClassCastException {
 		
 //		String userId = request.getParameter("userId");
-		String isuserCookie = request.getParameter("isuserCookie");//濡�洹몄�몄�몄��荑���
-		String isuserSave = request.getParameter("isuserSave");//���대������
+		String isuserCookie = request.getParameter("isuserCookie");//로그인세션쿠키
+		String isuserSave = request.getParameter("isuserSave");//아이디저장
 		
 		System.out.println(isuserCookie);
 		int result = 0;
@@ -615,14 +557,14 @@ public class BoardController {
 			result=1;
 		}
 		if(result == 1) {
-			session.setAttribute("userinfo", boardService.userinfoSelect(userinfo.getUserId()));//�� 媛��� �ㅼ��
+			session.setAttribute("userinfo", boardService.userinfoSelect(userinfo.getUserId()));//키 값을 설정
 			if(isuserCookie.equals("Y")) {
 				Cookie cookie = new Cookie("userCookie", request.getSession().getId());
 				cookie.setMaxAge(60*60*24*7);
 				cookie.setPath("/");
 				response.addCookie(cookie);
 				
-				//DB�� 荑��ㅻ�� ����
+				//DB에 쿠키를 저장
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("SESSIONID", request.getSession().getId());
 				Date sessionLimit = new Date(System.currentTimeMillis()+(1000*(60*60*24*7)));//60*60*24*7
@@ -632,9 +574,9 @@ public class BoardController {
 				
 			}
 			if(isuserSave.equals("Y")) {
-				System.out.println("泥댄�щ��� 媛� = Y");
+				System.out.println("체크박스 값 = Y");
 			} else {
-				System.out.println("泥댄�щ��� 媛� = N");
+				System.out.println("체크박스 값 = N");
 			}
 //			Cookie loginCookie = WebUtils.getCookie(request, "userCookie");
 //			
@@ -652,7 +594,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * 濡�洹몄�� �깃났�� �대�����ㅺ린
+	 * 로그인 성공후 이동시키기
 	 */
 	@RequestMapping(value = "/board/boardList.do")
 	@ResponseBody
@@ -665,7 +607,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * ����媛��� 踰��� 而⑦�몃·��
+	 * 회원가입 버튼 컨트롤러
 	 */
 	@RequestMapping(value = "/board/memberWriteAction.do",method = RequestMethod.POST)
 	public String addMemberJoin(UserInfoVo userinfoVo, Model model) throws Exception {
@@ -686,18 +628,18 @@ public class BoardController {
 		return "board/IdCheckForm";
 	}
 	/**
-	 * 濡�洹몄����
+	 * 로그아웃
 	 */
 	@RequestMapping("/board/memberLogout.do")
 	public String logout(UserInfoVo userinfo,HttpSession session, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		Cookie loginCookie = WebUtils.getCookie(request,"userCookie");
         if ( loginCookie !=null ){
-            // null�� ����硫� 議댁�ы��硫�!
+            // null이 아니면 존재하면!
         	loginCookie.setMaxAge(0);
         	loginCookie.setPath("/");
         	response.addCookie(loginCookie);
-        	// �ъ�⑹�� ���대������� ���④린媛��� ���ъ��媛��쇰� �ㅼ�� �명���댁��쇳��.
+        	// 사용자 테이블에서도 유효기간을 현재시간으로 다시 세팅해줘야함.
         	Map<String, Object> map = new HashMap<String, Object>();
 			map.put("SESSIONID", session.getId());
 			Date sessionLimit = new Date(System.currentTimeMillis());//60*60*24*7
@@ -715,7 +657,7 @@ public class BoardController {
 		return "board/memberModify";
 	}
 	/**
-	 * Json���쇰� ��湲곌린���� ���ㅽ�몃� 留��� 而⑦�몃·��
+	 * Json파일로 넘기기위해 테스트로 만든 컨트롤러
 	 * @param locale
 	 * @param boardVo
 	 * @return Json
@@ -894,7 +836,7 @@ public class BoardController {
 	}
 	
 	/**
-	 * ���� �ㅼ�대���
+	 * 엑셀 다운로드
 	 */
 	@RequestMapping("/board/excelDown.do")
 	public void excelDown(HttpServletResponse response
@@ -904,53 +846,53 @@ public class BoardController {
 		PageVo pageVo = new PageVo(pageNo, pageSize, boardService.selectBoardCnt(), blockSize);
 		
 
-		int endRow=boardService.selectBoardCnt();//珥����댁���
-		pageVo.setEndRow(endRow);//留�吏�留�源�吏� 異��ν��湲곗����
+		int endRow=boardService.selectBoardCnt();//총페이지수
+		pageVo.setEndRow(endRow);//마지막까지 출력하기위해
 		
-		//寃����� 紐⑸�遺��� 議고��
+		//게시판 목록부터 조회
 		List<BoardVo> boardList = boardService.SelectBoardList(pageVo);
 		
-		//���� ���щ� ����
+		//엑셀 워크북 생성
 		Workbook wb = new HSSFWorkbook();
-		Sheet sheet = wb.createSheet("寃�����");
+		Sheet sheet = wb.createSheet("게시판");
 		Row row = null;
 		Cell cell = null;
 		int rowNo = 0;
 		
-		//���대� Header �ㅽ����
+		//테이블 Header 스타일
 		CellStyle headerStyle = wb.createCellStyle();
 		/**
-		 * ���� 寃쎄��� �ㅽ����
+		 * 얇은 경계선 스타일
 		 */
 		headerStyle.setBorderTop(BorderStyle.THIN);
 		headerStyle.setBorderBottom(BorderStyle.THIN);
 		headerStyle.setBorderLeft(BorderStyle.THIN);
 		headerStyle.setBorderRight(BorderStyle.THIN);
 		
-		//諛곌꼍�� 吏���
+		//배경색 지정
 		//headerStyle.setFillForegroundColor(HSSFColorPredefined.AQUA.getIndex());
 		//headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		
 		headerStyle.setFillForegroundColor(IndexedColors.AQUA.getIndex());
 		headerStyle.setFillPattern(FillPatternType.BRICKS);
 		
-		//�곗�댄�� 媛��대�� ����
+		//데이터 가운데 정렬
 		//headerStyle.setAlignment(HorizontalAlignment.LEFT);
-		headerStyle.setAlignment(HorizontalAlignment.CENTER); //媛��대�� ����
-		headerStyle.setVerticalAlignment(VerticalAlignment.CENTER); //以��� ����
+		headerStyle.setAlignment(HorizontalAlignment.CENTER); //가운데 정렬
+		headerStyle.setVerticalAlignment(VerticalAlignment.CENTER); //중앙 정렬
 		
-		//�고�� �ㅼ��
+		//폰트 설정
 		Font fontOfGothic = wb.createFont();
-		fontOfGothic.setFontName("����怨���");
+		fontOfGothic.setFontName("나눔고딕");
 		
-		//�곗�댄�곗�� 寃쎄� �ㅽ���� ���щ━留� 吏���
+		//데이터용 경계 스타일 테투리만 지정
 		CellStyle bodyStyle = wb.createCellStyle();
 		bodyStyle.setBorderTop(BorderStyle.THIN);
 		bodyStyle.setBorderBottom(BorderStyle.THIN);
 		bodyStyle.setBorderLeft(BorderStyle.THIN);
 		bodyStyle.setBorderRight(BorderStyle.THIN);
 		
-		//�ㅻ�� ����
+		//헤더 생성
 		row = sheet.createRow(rowNo++);
 		cell = row.createCell(0);
 		cell.setCellStyle(bodyStyle);
@@ -971,7 +913,7 @@ public class BoardController {
 		cell.setCellStyle(bodyStyle);
 		cell.setCellValue("Writer");
 		
-		//�곗�댄�� ����
+		//데이터 생성
 		for(BoardVo vo:boardList) {
 			row = sheet.createRow(rowNo++);
 			cell = row.createCell(0);
@@ -989,7 +931,7 @@ public class BoardController {
 			cell = row.createCell(4);
 			cell.setCellStyle(bodyStyle);
 			
-			//0����10源�吏��� ��由우��留� ���ㅺ� 蹂�寃� ��)2020-01-21
+			//0에서10까지의 자릿수만 나오게 변경 예)2020-01-21
 			if(vo.getCreateTime().length() > 10 ) {
 				cell.setCellValue(vo.getCreateTime().substring(0, 10));				
 			}
@@ -998,29 +940,29 @@ public class BoardController {
 			cell.setCellValue(vo.getCreator());
 		}
 		
-		//而⑦��痢� ����怨� ���쇰� 吏���
+		//컨텐츠 타입과 파일명 지정
 		response.setContentType("ms-vnd/excel");
 		
-		//���λ���대��� ��吏�遺��ъ�� ���μ���ㅺ린���� date�ъ��
+		//저장될이름에 날짜붙여서 저장시키기위해 date사용
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		//SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+SS");
 		Date date = new Date();
 		String today = sdf.format(date);
 		response.setHeader("Content-Disposition", "attachment;filename=test-"+ today +".xls");
 		
-		//���� 異���
+		//엑셀 출력
 		wb.write(response.getOutputStream());
 		wb.close();
 	}
 	
-	//���댁� �몄� 硫�����
+	//페이지 호출 메소드
 	@RequestMapping(value = "/board/fileUpload.do")
 	public void uploadForm() {
-		//fileUpload.jsp ���댁� �ъ����
+		//fileUpload.jsp 페이지 포워딩
 	}
 
 	/**
-	 * ���� ��濡���
+	 * 파일 업로드
 	 * @param file
 	 */
 	@RequestMapping(value = "/board/fileUpload.do", method = RequestMethod.POST)
@@ -1028,15 +970,15 @@ public class BoardController {
 			,MultipartHttpServletRequest request
 			, Model model) throws Exception{
 		
-		logger.info("���쇱�대� : "+file.getOriginalFilename());
-		logger.info("���쇳�ш린 : "+file.getSize());
-		logger.info("而⑦��痢� ���� : "+file.getContentType());
+		logger.info("파일이름 : "+file.getOriginalFilename());
+		logger.info("파일크기 : "+file.getSize());
+		logger.info("컨텐츠 타입 : "+file.getContentType());
 		
-		String saveName = file.getOriginalFilename();//���μ�대�
-		File target = new File(uploadPath, saveName);//��寃� ���κ꼍濡��� 蹂몃���대��쇰� 
+		String saveName = file.getOriginalFilename();//저장이름
+		File target = new File(uploadPath, saveName);//타겟 저장경로에 본래이름으로 
 		
-		//����������由ъ�� ���λ�� ��濡��� ���쇱�� 吏����� ������由щ�蹂듭��
-		//諛��댄�몃같��, ���쇨�泥�
+		//임시디렉토리에 저장된 업로드 파일을 지정한 디렉토리로복사
+		//바이트배열, 파일객체
 		FileCopyUtils.copy(file.getBytes(), target);
 		
 //		mv.setViewName("upload/uploadResult");
@@ -1063,15 +1005,15 @@ public class BoardController {
 		return "board/FileFrame";
 	}
 	/**
-	//�ㅼ����� ���ㅽ��
+	//다중파일 테스트
 	@RequestMapping(value = "/board/fileUploadList.do")
 	public ModelAndView fileUploadList(MultipartFile[] file) {
 		ModelAndView mv = new ModelAndView("redirect:/board/boardList.do");
 		for(int i=0; i<file.length; i++) {
             logger.debug("================== file start ==================");
-            logger.debug("���� �대�: "+file[i].getName());
-            logger.debug("���� �ㅼ�� �대�: "+file[i].getOriginalFilename());
-            logger.debug("���� �ш린: "+file[i].getSize());
+            logger.debug("파일 이름: "+file[i].getName());
+            logger.debug("파일 실제 이름: "+file[i].getOriginalFilename());
+            logger.debug("파일 크기: "+file[i].getSize());
             logger.debug("content type: "+file[i].getContentType());
             logger.debug("================== file   END ==================");
         }
@@ -1080,16 +1022,16 @@ public class BoardController {
 	**/
 	
 	/**
-	 * ���� �ㅼ�대���
+	 * 파일 다운로드
 	 * @param map
 	 */
 	@RequestMapping("/board/fileDown.do")
 	public void fileDown(@RequestParam Map<String, Object> map,HttpServletResponse response) throws Exception{
 		
 		/** 
-		 * 酉� ���댁����� fileNum�� ���ы�� 而⑦�몃·�щ�⑥�� ���몄�嫄� Map�� 留��ㅼ�댁�� ��鍮��ㅻ�� �몄�
-		 * Resultmap�� ���� 留��ㅼ�댁���대���� 嫄곌린�� ���쇰��몃� ���쇱��蹂몄�대�怨� ���쇱���μ�대��� 
-		 * 寃����댁�� 洹멸구濡� byte濡� �ㅼ�� 遺��щ�ㅼ�� ���ν�� @RequestParam ����
+		 * 뷰 페이지에서 fileNum을 전달해 컨트롤러단에 던져준걸 Map을 만들어서 서비스를 호출
+		 * Resultmap을 하나 만들어서담는다 거기에 파일번호로 파일원본이름과 파일저장이름을 
+		 * 검색해서 그걸로 byte로 다시 불러들여 저장함 @RequestParam 필수
 		**/ 
 		Map<String, Object> resultMap = boardService.fileDownlad(map);
 		String storedFileName = (String) resultMap.get("FILE_SAVE_NAME");
@@ -1098,7 +1040,7 @@ public class BoardController {
 		logger.info("storedFileName = "+storedFileName);
 		logger.info("originalFileName = "+originalFileName);
 		
-		//���쇱�� ���κ꼍濡����� �ㅼ�� 遺��� �쎌�대�ㅼ�ъ�� byte濡� 蹂���
+		//파일을 저장경로에서 다시 불러 읽어들여서 byte로 변환
 		byte[] fileByte = org.apache.commons.io.FileUtils.readFileToByteArray(new File("d:\\uploadImage\\"+storedFileName));
 		
 		response.setContentType("application/octet-stream");
@@ -1109,12 +1051,3 @@ public class BoardController {
 		response.getOutputStream().close();
 	}
 }
-
-
-
-
-
-
-
-
-
