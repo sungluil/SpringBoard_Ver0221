@@ -506,7 +506,7 @@
 		  FROM
 		  	(
 	<foreach item="item" collection="list"  separator=" UNION ALL" index="index">
-		  		SELECT (SELECT NVL(TO_NUMBER(MAX(FILE_ID)+(#{index }+1)),1) FROM POST_FILE_TABLE) as fileId
+		  		SELECT (SELECT NVL(TO_NUMBER(MAX(FILE_NUM)+(#{index }+1)),1) FROM POST_FILE_TABLE) as fileId
 		  	  , #{item.fileWriter, jdbcType=VARCHAR } as fileWriter
 		  	  , (SELECT NVL(TO_NUMBER(MAX(FILE_NUM)+(#{index }+1)),1) FROM POST_FILE_TABLE) as fileNum
 		  	  , #{item.fileGroup, jdbcType=VARCHAR } as fileGroup
@@ -528,5 +528,70 @@
     	  FROM POST_FILE_TABLE
          WHERE FILE_NUM = #{fileNum, jdbcType=VARCHAR }
     </select>
+    <select id="boardNewSearch" parameterType="com.spring.board.vo.PageVo" resultMap="boardVo">
+     /* board.boardSearch */
+        SELECT BOARD_TYPE
+		  	 , BOARD_NUM
+		  	 , BOARD_TITLE
+		  	 , BOARD_COMMENT
+		  	 , TOTAL_CNT
+		  	 , CODE_NAME
+		  FROM 
+		  (
+			   SELECT BOARD_TYPE
+				    , BOARD_NUM
+				    , BOARD_TITLE
+				    , BOARD_COMMENT
+			        , ROW_NUMBER() OVER(ORDER BY BOARD_NUM DESC) AS NUMROW
+			        , COUNT(*) OVER() AS TOTAL_CNT
+			        , CODE_NAME
+				 FROM BOARD,COM_CODE	
+				WHERE BOARD.BOARD_TYPE = COM_CODE.CODE_ID
+				<choose>
+				<when test="list != null">
+					AND BOARD_TYPE IN
+					<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			        	#{item}
+			  		</foreach> 
+				</when>
+				<when test="keyword != null and keyword !='' ">
+					AND BOARD_TITLE LIKE '%'|| #{keyword,jdbcType=VARCHAR} ||'%' 
+				</when>
+				</choose>
+				<!--
+ 				<if test="list != null">
+					AND BOARD_TYPE IN
+					<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			        	#{item}
+			  		</foreach> 
+		  		</if>
+		  		 -->
+			)
+		 WHERE NUMROW BETWEEN #{startRow} AND #{endRow}
+    </select>
     
+    <select id="boardNewSearchCnt" parameterType="Integer" resultType="Integer">
+     /* board.boardSearchCnt */
+        SELECT COUNT(*) AS TOTAL_CNT
+		  FROM BOARD
+		<choose>
+			<when test="list != null">
+				WHERE BOARD_TYPE IN
+				<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+					#{item}
+				</foreach> 
+			</when>
+			<when test="keyword != null and keyword !='' ">
+				WHERE BOARD_TITLE LIKE '%'|| #{keyword,jdbcType=VARCHAR} ||'%' 
+			</when>
+		</choose>
+		<!--	  
+ 		<if test="list != null"> 
+		 WHERE BOARD_TYPE IN
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			 	#{item}
+			 </foreach> 
+		 </if>
+		 -->
+    </select>
 </mapper>

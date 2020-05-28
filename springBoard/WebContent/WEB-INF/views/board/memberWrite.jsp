@@ -6,7 +6,10 @@
 <head>
 <title>회원가입</title>
 <style type="text/css">
-
+input {
+	max-width: 240px;
+	border: 1px solid #111;
+}
 input::placeholder {
 	color: gray;
 	font-style: italic;
@@ -18,11 +21,11 @@ select {
 	height: 26px;
 }
 .t1 {
-	width:150px;
+	width:109px;
 	text-align: center;	
 }
 .t2 {
-	width: 400px;
+	width: 200px;
 }
 .error {
 	color: red;
@@ -41,36 +44,66 @@ select {
 	<tr>
 		<td>
 		<form name="f" method="post">
-			<table id="boardTable" border = "1">
+			<table id="boardTable" border = "0" style="border-spacing: 5px; border-collapse: separate;" >
+			<caption style="display: none;">회원가입</caption>
 			<thead>
 				<tr>
 					<td height="40" width="80" align="center" colspan="3">
-						회원가입
+					
 					</td>
 				</tr>
 			</thead>
-			<tbody>	
+			<tbody id="joinContent">	
 				<tr>
 					<td class="t1">
 						Id
 					</td>
 					<td class="t2">
 						<div><input name="userId" id="id" type="text" placeholder="아이디" onkeyup="" onmouseover="isSame()" value="${userinfo.userId }">
-				  		&emsp;<input type="button" class="idCheck" value="중복확인"></div>
-				  		<span id="idMsg" class="error"></span>
+				  		</div>
+				  		<input type="hidden" name="idDuplication" value="idUncheck">
+					</td>
+					<td>
+					&emsp;<input type="button" class="idCheck" value="중복확인">
+					</td>
+				</tr>
+				<tr>
+					<td>
+
+					</td>
+					<td>
+						<span id="idMsg" class="error"></span>
+					</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+
+					</td>
+					<td>
 				  		<span class="result">
 				  			<span class="msg">아이디를 확인해주세요.</span>
 				  		</span>
-				  		<input type="hidden" name="idDuplication" value="idUncheck">
+					</td>
+					<td>
 					</td>
 				</tr>
+				
 				<tr>
 					<td class="t1">
 						pw
 					</td>
 					<td class="t2">
 						<div><input name="userPw" id="pw" type="password" placeholder="비밀번호" onkeyup="isSame()"></div>
-						<span id="pwMsg" class="error"></span>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+					</td>
+					<td>
+					<span id="pwMsg" class="error"></span>
 					</td>
 				</tr>
 				<tr>
@@ -79,7 +112,14 @@ select {
 					</td>
 					<td class="t2">
 						<div><input name="userPwChk" id="pwCheck" type="password" placeholder="비밀번호 확인" onkeyup="isSame()"></div>
-						<span id="pwCheckMsg" class="error"></span>
+						
+					</td>
+				</tr>
+				<tr>
+					<td>
+					</td>
+					<td>
+					<span id="pwCheckMsg" class="error"></span>
 					</td>
 				</tr>
 				<tr>
@@ -248,7 +288,7 @@ function checkId() {
 	//var pPattern = /^[0-9]+\d{3,4}-\d{4}$/g;
 	var pPattern = /^[0-9]+\d{3,4}$/g;
 	if(!pPattern.test( $j("#phone2").val())) {
-		$j("#phoneMsg").text("전화번호를 제대로 입력해주세요");
+		$j("#phoneMsg").text("2번째 전화번호를 제대로 입력해주세요");
 		return false;
 	}
 	var pPattern = /^[0-9]+\d{3,4}$/g;
@@ -319,6 +359,12 @@ function isSame() {
  	$j("#name").keyup(function() {
  		$j(this).val( $j(this).val().replace( /[a-zA-Z]/g, '' ) );
 	});
+ 	$j("#phone2").keyup(function() {
+ 		$j(this).val( $j(this).val().replace( /[0-9].{4}/g, '' ) );
+	});
+ 	$j("#phone3").keyup(function() {
+ 		$j(this).val( $j(this).val().replace( /[0-9].{4}/g, '' ) );
+	});
 	
 	if($j("#id").val()=="") {
 		$j("#idMsg").text("필수정보 입니다.");
@@ -367,17 +413,18 @@ function isSame() {
 		$j("#phoneMsg").text("전화번호를 제대로 입력해주세요");
 		return false;
 	}
-// 	var pPattern = /^[0-9]+\d{3,4}$/g;
-// 	if(!pPattern.test( $j("#phone3").val())) {
-// 		$j("#phoneMsg").text("전화번호를 제대로 입력해주세요");
-// 		return false;
-// 	}
+	var pPattern2 = /^[0-9]+\d{3,4}$/g;
+	if(!pPattern2.test( $j("#phone3").val())) {
+		$j("#phoneMsg").text("전화번호를 제대로 입력해주세요");
+		return false;
+	}
 	//우편번호 입력
 	if($j("#post").val()=="") {
  		$j("#postMsg").text("우편번호 입력해주세요");
  		return false;
 	}
-	var postPattern = /^[0-9]+\d{2,3}-\d{3}/g;
+	var postPattern = /^[0-9]+\d{2}-\d{3}/g;
+	//var postPattern = /^[0-9]+\d{2,3}-\d{3}/g;
 	if(!postPattern.test( $j("#post").val())) {
 		$j("#postMsg").text("숫자만 가능하며 xxx-xxx형식.");
 		return false;

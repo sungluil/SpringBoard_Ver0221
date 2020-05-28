@@ -2,10 +2,10 @@ package com.spring.board.vo;
 
 public class PageVo {
 
-	private int pageNo;//페이지 번호
-	private int pageSize;//한페이지에 뿌려질 게시글 갯수
-	private int totalCnt;//총글수
-	private int blockSize;//블럭에 검색될 페이지갯수
+	private int pageNo;//현재페이지
+	private int pageSize;//뿌려질글 갯수
+	private int totalCnt;//총갯수
+	private int blockSize;//블럭갯수
 	
 	private int totalPage;
 	private int startRow;
@@ -33,32 +33,32 @@ public class PageVo {
 	
 	private void calcPager() {
 		
-		//총페이지 수는 총게시글 갯수 나누기 페이지당 출력갯수
+		//珥����댁� ���� 珥�寃���湲� 媛��� ����湲� ���댁��� 異��κ갗��
 		totalPage=(totalCnt+pageSize-1)/pageSize;
 		
-		//만약에 현재페이지가 0보다작거나같고 현재페이지번호가 총페이지보다 크면 페이지번호는1
+		//留��쎌�� ���ы���댁�媛� 0蹂대�ㅼ��嫄곕��媛�怨� ���ы���댁�踰��멸� 珥����댁�蹂대�� �щ㈃ ���댁�踰��몃��1
 		if(pageNo < 1) pageNo=1;
 		if(pageNo > totalPage) pageNo=totalPage;
 		
-		//게시글의 시작행은 현재페이지 -1 곱하기 페이지당출력갯수 +1
+		//寃���湲��� �������� ���ы���댁� -1 怨깊��湲� ���댁��뱀��κ갗�� +1
 		startRow = (pageNo-1) * pageSize + 1;
 		System.out.println((pageNo-1) * pageSize + 1);
-		//마지막행은 페이지번호 곱하기 페이지당출력갯수
+		//留�吏�留����� ���댁�踰��� 怨깊��湲� ���댁��뱀��κ갗��
 		endRow = pageNo * pageSize;
 		System.out.println("pageNo = "+pageNo+", pageSize = "+pageSize);
 		System.out.println(pageNo * pageSize);
-		//만약에 마지막행이 총페이지 갯수보다 많으면 마지막행은=총페이지갯수
+		//留��쎌�� 留�吏�留����� 珥����댁� 媛���蹂대�� 留��쇰㈃ 留�吏�留�����=珥����댁�媛���
 		if(endRow>totalCnt) {
 			endRow=totalCnt;
 		}
 		
-		//블럭시작페이지는 = 현재페이지-1 나누기 출력될블럭갯수 곱하기 블럭갯수+1
+		//釉����������댁��� = ���ы���댁�-1 ����湲� 異��λ��釉���媛��� 怨깊��湲� 釉���媛���+1
 		startPage = (pageNo-1) / blockSize * blockSize + 1;
 		
-		//블럭마지막은 블럭시작 곱하기 출력될블럭갯수
+		//釉���留�吏�留��� 釉������� 怨깊��湲� 異��λ��釉���媛���
 		endPage = startPage + blockSize - 1;
 		
-		//만약에 마지막블럭이 총페이지갯수보다 높으면 마지막블럭은 총페이지갯수
+		//留��쎌�� 留�吏�留�釉����� 珥����댁�媛���蹂대�� ���쇰㈃ 留�吏�留�釉����� 珥����댁�媛���
 		if(endPage>totalPage) {
 			endPage=totalPage;
 		}
